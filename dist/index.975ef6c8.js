@@ -604,7 +604,6 @@ const getCurrentDate = function() {
     return new Date().toISOString().slice(0, 10);
 };
 const getWord = function() {
-<<<<<<< HEAD
     const currentDate = new Date();
     const day = currentDate.getDate();
     const index = (day - 1) % (0, _targetDefault.default).length;
@@ -613,13 +612,6 @@ const getWord = function() {
     return newWord;
 };
 getWord();
-=======
-    const randomIndex = Math.floor(Math.random() * (0, _targetDefault.default).length);
-    const newWord = (0, _targetDefault.default)[randomIndex];
-    setLocalStorage("dailyWord", newWord);
-    return newWord;
-};
->>>>>>> e124cfc7d343ed9aa0521febb5d91e3450dad0b3
 const checkAndSetWord = function() {
     const today = getCurrentDate();
     const storedDate = getLocalStorage("wordDate");
@@ -627,10 +619,6 @@ const checkAndSetWord = function() {
         DAILY_WORD = getWord();
         setLocalStorage("wordDate", today);
     } else DAILY_WORD = getLocalStorage("dailyWord");
-<<<<<<< HEAD
-=======
-    console.log("Today's word:", DAILY_WORD);
->>>>>>> e124cfc7d343ed9aa0521febb5d91e3450dad0b3
     return DAILY_WORD;
 };
 document.addEventListener("DOMContentLoaded", function() {
@@ -796,6 +784,7 @@ const codeleWords = [
     "async",
     "batch",
     "block",
+    "debug",
     "bytes",
     "catch",
     "chart",
@@ -804,7 +793,6 @@ const codeleWords = [
     "close",
     "count",
     "crypt",
-    "debug",
     "defer",
     "error",
     "event",
