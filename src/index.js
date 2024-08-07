@@ -3,59 +3,58 @@ import { WORD_LENGTH } from "./config";
 import { FLIP_DURATION } from "./config";
 import { DANCE_ANIMATION } from "./config";
 
-let DAILY_WORD
+let DAILY_WORD;
 
-const keyboard = document.querySelector('.keyboard')
-const guessGrid = document.querySelector('.guess')
-const alertContainer = document.querySelector(`[data-alert-container]`)
+const keyboard = document.querySelector('.keyboard');
+const guessGrid = document.querySelector('.guess');
+const alertContainer = document.querySelector(`[data-alert-container]`);
 
-const setLocalStorage = function (word) {
-    localStorage.setItem("dailyWord", JSON.stringify(word))
-}
+const setLocalStorage = function (key, value) {
+    localStorage.setItem(key, JSON.stringify(value));
+};
 
-const getLocalStorage = function () {
-    const newWord =  localStorage.getItem("dailyWord")
-    if (!newWord) return
-    const parsedNewWord = JSON.parse(newWord)
-    DAILY_WORD = parsedNewWord
-    return DAILY_WORD
-}
-
-document.addEventListener('DOMContentLoaded', getLocalStorage)
+const getLocalStorage = function (key) {
+    const value = localStorage.getItem(key);
+    if (!value) return null;
+    return JSON.parse(value);
+};
 
 const getCurrentDate = function () {
-    return new Date().toISOString().slice(0, 10)
-}
-
-const getCurrentTime = function () {
-    const now = new Date()
-    return now.getHours()
-}
+    return new Date().toISOString().slice(0, 10); 
+};
 
 const getWord = function () {
-    const today = getCurrentDate()
-    const seed = today
-    const seedNumber = +seed.replaceAll('-', '')
-    const index = seedNumber % codeleWords.length
-    DAILY_WORD = codeleWords[index]
-    setLocalStorage(DAILY_WORD)
-    return DAILY_WORD
-}
+    const randomIndex = Math.floor(Math.random() * codeleWords.length);
+    const newWord = codeleWords[randomIndex];
+    setLocalStorage("dailyWord", newWord);
+    return newWord;
+};
 
-
-
-const getWordForToday = function () {
-    const currentTime = getCurrentTime()
-    if (currentTime === 6) {
-        localStorage.clear()
-        return getWord()
-    } 
+const checkAndSetWord = function () {
+    const today = getCurrentDate();
+    const storedDate = getLocalStorage("wordDate");
+    
+    if (storedDate !== today) {
+    
+        DAILY_WORD = getWord(); 
+        setLocalStorage("wordDate", today); 
+    } else {
         
-    if (!DAILY_WORD) DAILY_WORD = getWord()
-    return DAILY_WORD
-}
+        DAILY_WORD = getLocalStorage("dailyWord"); 
+    }
 
-const word = getWordForToday()
+    console.log("Today's word:", DAILY_WORD); 
+    return DAILY_WORD;
+};
+
+
+document.addEventListener('DOMContentLoaded', function () {
+    checkAndSetWord()
+})
+
+
+setInterval(checkAndSetWord, 60000);
+
 
 const startInteraction = function () {
     document.addEventListener('click', handleMouseClick)
@@ -191,11 +190,11 @@ const flipTiles = function (tile, index, array, guess) {
 
     tile.addEventListener('transitionend', () => {
         tile.classList.remove('flip')
-        if (word[index] === letter) {
+        if (DAILY_WORD[index] === letter) {
             tile.dataset.state = "correct"
             key.classList.add("correct")
         } 
-        else if (word[index] !== letter && word.includes(letter)) {
+        else if (DAILY_WORD[index] !== letter && DAILY_WORD.includes(letter)) {
             tile.dataset.state = "wrong-location"
             key.classList.add('wrong-location')
         }
@@ -216,7 +215,7 @@ const flipTiles = function (tile, index, array, guess) {
 
 
 const checkWinLose = function(guess, tiles) {
-    if (guess === word) {
+    if (guess === DAILY_WORD) {
         showAlert("You win", 2500)
         danceTiles(tiles)
         stopInteraction()
@@ -225,7 +224,7 @@ const checkWinLose = function(guess, tiles) {
     const remainingTiles = guessGrid.querySelectorAll(":not([data-letter])")
 
     if (remainingTiles.length === 0) {
-        showAlert(word.toUpperCase(), null)
+        showAlert(DAILY_WORD.toUpperCase(), null)
         stopInteraction()
         shakeTiles(tiles)
     }
