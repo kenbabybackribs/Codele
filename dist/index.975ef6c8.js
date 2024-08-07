@@ -592,43 +592,39 @@ let DAILY_WORD;
 const keyboard = document.querySelector(".keyboard");
 const guessGrid = document.querySelector(".guess");
 const alertContainer = document.querySelector(`[data-alert-container]`);
-const setLocalStorage = function(word) {
-    localStorage.setItem("dailyWord", JSON.stringify(word));
+const setLocalStorage = function(key, value) {
+    localStorage.setItem(key, JSON.stringify(value));
 };
-const getLocalStorage = function() {
-    const newWord = localStorage.getItem("dailyWord");
-    if (!newWord) return;
-    const parsedNewWord = JSON.parse(newWord);
-    DAILY_WORD = parsedNewWord;
-    return DAILY_WORD;
+const getLocalStorage = function(key) {
+    const value = localStorage.getItem(key);
+    if (!value) return null;
+    return JSON.parse(value);
 };
-document.addEventListener("DOMContentLoaded", getLocalStorage);
 const getCurrentDate = function() {
     return new Date().toISOString().slice(0, 10);
 };
-const getCurrentTime = function() {
-    const now = new Date();
-    return now.getHours();
-};
 const getWord = function() {
+    const currentDate = new Date();
+    const day = currentDate.getDate();
+    const index = (day - 1) % (0, _targetDefault.default).length;
+    const newWord = (0, _targetDefault.default)[index];
+    setLocalStorage("dailyWord", newWord);
+    return newWord;
+};
+getWord();
+const checkAndSetWord = function() {
     const today = getCurrentDate();
-    const seed = today;
-    const seedNumber = +seed.replaceAll("-", "");
-    const index = seedNumber % (0, _targetDefault.default).length;
-    DAILY_WORD = (0, _targetDefault.default)[index];
-    setLocalStorage(DAILY_WORD);
+    const storedDate = getLocalStorage("wordDate");
+    if (storedDate !== today) {
+        DAILY_WORD = getWord();
+        setLocalStorage("wordDate", today);
+    } else DAILY_WORD = getLocalStorage("dailyWord");
     return DAILY_WORD;
 };
-const getWordForToday = function() {
-    const currentTime = getCurrentTime();
-    if (currentTime === 6) {
-        localStorage.clear();
-        return getWord();
-    }
-    if (!DAILY_WORD) DAILY_WORD = getWord();
-    return DAILY_WORD;
-};
-const word = getWordForToday();
+document.addEventListener("DOMContentLoaded", function() {
+    checkAndSetWord();
+});
+setInterval(checkAndSetWord, 60000);
 const startInteraction = function() {
     document.addEventListener("click", handleMouseClick);
     document.addEventListener("keydown", handleKeyPress);
@@ -743,10 +739,10 @@ const flipTiles = function(tile, index, array, guess) {
     }, index * (0, _config.FLIP_DURATION) / 2);
     tile.addEventListener("transitionend", ()=>{
         tile.classList.remove("flip");
-        if (word[index] === letter) {
+        if (DAILY_WORD[index] === letter) {
             tile.dataset.state = "correct";
             key.classList.add("correct");
-        } else if (word[index] !== letter && word.includes(letter)) {
+        } else if (DAILY_WORD[index] !== letter && DAILY_WORD.includes(letter)) {
             tile.dataset.state = "wrong-location";
             key.classList.add("wrong-location");
         } else {
@@ -764,7 +760,7 @@ const flipTiles = function(tile, index, array, guess) {
     });
 };
 const checkWinLose = function(guess, tiles) {
-    if (guess === word) {
+    if (guess === DAILY_WORD) {
         showAlert("You win", 2500);
         danceTiles(tiles);
         stopInteraction();
@@ -772,43 +768,13 @@ const checkWinLose = function(guess, tiles) {
     }
     const remainingTiles = guessGrid.querySelectorAll(":not([data-letter])");
     if (remainingTiles.length === 0) {
-        showAlert(word.toUpperCase(), null);
+        showAlert(DAILY_WORD.toUpperCase(), null);
         stopInteraction();
         shakeTiles(tiles);
     }
 };
 
-},{"@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3","./target":"bXNQG","./config":"jtCLN"}],"gkKU3":[function(require,module,exports) {
-exports.interopDefault = function(a) {
-    return a && a.__esModule ? a : {
-        default: a
-    };
-};
-exports.defineInteropFlag = function(a) {
-    Object.defineProperty(a, "__esModule", {
-        value: true
-    });
-};
-exports.exportAll = function(source, dest) {
-    Object.keys(source).forEach(function(key) {
-        if (key === "default" || key === "__esModule" || Object.prototype.hasOwnProperty.call(dest, key)) return;
-        Object.defineProperty(dest, key, {
-            enumerable: true,
-            get: function() {
-                return source[key];
-            }
-        });
-    });
-    return dest;
-};
-exports.export = function(dest, destName, get) {
-    Object.defineProperty(dest, destName, {
-        enumerable: true,
-        get: get
-    });
-};
-
-},{}],"bXNQG":[function(require,module,exports) {
+},{"./target":"bXNQG","./config":"jtCLN","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"bXNQG":[function(require,module,exports) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 const codeleWords = [
@@ -864,7 +830,37 @@ const codeleWords = [
 ];
 exports.default = codeleWords;
 
-},{"@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"jtCLN":[function(require,module,exports) {
+},{"@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"gkKU3":[function(require,module,exports) {
+exports.interopDefault = function(a) {
+    return a && a.__esModule ? a : {
+        default: a
+    };
+};
+exports.defineInteropFlag = function(a) {
+    Object.defineProperty(a, "__esModule", {
+        value: true
+    });
+};
+exports.exportAll = function(source, dest) {
+    Object.keys(source).forEach(function(key) {
+        if (key === "default" || key === "__esModule" || Object.prototype.hasOwnProperty.call(dest, key)) return;
+        Object.defineProperty(dest, key, {
+            enumerable: true,
+            get: function() {
+                return source[key];
+            }
+        });
+    });
+    return dest;
+};
+exports.export = function(dest, destName, get) {
+    Object.defineProperty(dest, destName, {
+        enumerable: true,
+        get: get
+    });
+};
+
+},{}],"jtCLN":[function(require,module,exports) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 parcelHelpers.export(exports, "WORD_LENGTH", ()=>WORD_LENGTH);
